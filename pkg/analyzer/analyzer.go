@@ -35,7 +35,8 @@ func run(pass *analysis.Pass) (interface{}, error) {
 		return nil, fmt.Errorf("Error: %s", err.Error())
 	}
 	defer speller.Delete()
-	for _, exemption := range strings.Split(",", *exemptions) {
+	for _, exemption := range strings.Split(*exemptions, ",") {
+		fmt.Printf("%s", exemption)
 		speller.AddToPersonal(exemption)
 	}
 
