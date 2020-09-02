@@ -1,9 +1,11 @@
 package analyzer
 
 import (
+	"fmt"
 	"go/ast"
 	"go/token"
 
+	"github.com/trustmaster/go-aspell"
 	"golang.org/x/tools/go/analysis"
 )
 
@@ -18,6 +20,14 @@ var Analyzer = &analysis.Analyzer{
 }
 
 func run(pass *analysis.Pass) (interface{}, error) {
+	speller, err := aspell.NewSpeller(map[string]string{
+		"lang": "en_US",
+	})
+	if err != nil {
+		return nil, fmt.Errorf("Error: %s", err.Error())
+	}
+	defer speller.Delete()
+
 	inspect := func(node ast.Node) bool {
 		if node == nil {
 			return true
@@ -31,9 +41,14 @@ func run(pass *analysis.Pass) (interface{}, error) {
 		if variable.Obj == nil {
 			return true
 		}
+		speller.AddToPersonal("ok")
+		speller.AddToPersonal("ip")
+		speller.AddToPersonal("ctx")
+		speller.AddToPersonal("vm")
+		speller.AddToPersonal("url")
 
 		if _, ok := variable.Obj.Decl.(*ast.AssignStmt); ok {
-			if len([]byte(variable.Name)) < 3 && variable.Name != "ok" && variable.Name != "_" && variable.Name != "ip" {
+			if len([]byte(variable.Name)) < 4 && !speller.Check(variable.Name) {
 				pass.Reportf(node.Pos(), "short variable name '%s' should be more descriptive",
 					variable.Name)
 			}
