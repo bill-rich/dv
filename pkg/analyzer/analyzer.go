@@ -3,19 +3,27 @@ package analyzer
 import (
 	"fmt"
 	"go/ast"
-	"go/token"
+	"strings"
 
+	"github.com/fatih/camelcase"
 	"github.com/trustmaster/go-aspell"
 	"golang.org/x/tools/go/analysis"
 )
 
-type visitor struct {
-	fset *token.FileSet
+var (
+	exemptions *string
+	minLength  *int
+)
+
+func init() {
+	exemptions = Analyzer.Flags.String("exemptions", "", "comma separated list of additional words to accept")
+	minLength = Analyzer.Flags.Int("min-length", 4, "minimum variable length")
 }
 
+// Analyzer is the core.
 var Analyzer = &analysis.Analyzer{
-	Name: "goprintffuncname",
-	Doc:  "Checks that printf-like functions are named with `f` at the end.",
+	Name: "dv",
+	Doc:  "Checks that all variables meet a minimum length or include words.",
 	Run:  run,
 }
 
@@ -27,6 +35,9 @@ func run(pass *analysis.Pass) (interface{}, error) {
 		return nil, fmt.Errorf("Error: %s", err.Error())
 	}
 	defer speller.Delete()
+	for _, exemption := range strings.Split(",", *exemptions) {
+		speller.AddToPersonal(exemption)
+	}
 
 	inspect := func(node ast.Node) bool {
 		if node == nil {
@@ -48,7 +59,7 @@ func run(pass *analysis.Pass) (interface{}, error) {
 		speller.AddToPersonal("url")
 
 		if _, ok := variable.Obj.Decl.(*ast.AssignStmt); ok {
-			if len([]byte(variable.Name)) < 4 && !speller.Check(variable.Name) {
+			if len([]byte(variable.Name)) < *minLength && !checkVariableSpelling(variable.Name, speller) {
 				pass.Reportf(node.Pos(), "short variable name '%s' should be more descriptive",
 					variable.Name)
 			}
@@ -59,4 +70,13 @@ func run(pass *analysis.Pass) (interface{}, error) {
 		ast.Inspect(f, inspect)
 	}
 	return nil, nil
+}
+
+func checkVariableSpelling(varName string, speller aspell.Speller) bool {
+	for _, word := range camelcase.Split(varName) {
+		if speller.Check(word) {
+			return true
+		}
+	}
+	return false
 }

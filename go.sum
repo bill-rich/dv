@@ -1,3 +1,5 @@
+github.com/fatih/camelcase v1.0.0 h1:hxNvNX/xYBp0ovncs8WyWZrOrpBNub/JfaMvbURyft8=
+github.com/fatih/camelcase v1.0.0/go.mod h1:yN2Sb0lFhZJUdVvtELVWefmrXpuZESvPmqwoZc+/fpc=
 github.com/trustmaster/go-aspell v0.0.0-20200701131845-c2b1f55bec8f h1:92ZQJRegaqnKjz9HY9an696Sw5EmAqRv0eie/U2IE6k=
 github.com/trustmaster/go-aspell v0.0.0-20200701131845-c2b1f55bec8f/go.mod h1:wxUiQ1klFJmwnM41kQI7IT2g8jjOKbtuL54LdjkxAI0=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
